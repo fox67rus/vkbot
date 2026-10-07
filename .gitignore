@@ -21,3 +21,6 @@ __pycache__/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Локальные рабочие файлы, в репозиторий не идут
+PLAN.md

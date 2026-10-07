@@ -1,0 +1,12 @@
+# Единые переводы строк: весь текст хранится с LF
+# и в репозитории, и в рабочей копии — на любой ОС
+* text=auto eol=lf
+
+# Бинарные файлы git не трогает
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
