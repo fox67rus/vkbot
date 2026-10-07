@@ -1,0 +1,23 @@
+# Секреты — живут только локально
+.env
+.env.*
+!.env.example
+
+# Зависимости и кэши
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Рантайм-состояние бота (longpoll: ts и id сообщества в имени файла)
+.vkbottle/
+
+# Логи
+*.log
+
+# Мелочь от редакторов и ОС
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
