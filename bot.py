@@ -9,7 +9,9 @@ from vkbottle import VKAPIError
 from vkbottle.bot import Bot
 
 from config import ConfigError, get_ai_client, get_settings
-from handlers import chat_labeler, greeting_labeler
+from content import ContentError, get_content
+from handlers import chat_labeler, greeting_labeler, menu_labeler
+from handlers.menu import content_services_count
 from middlewares import MessageLogMiddleware
 
 logger = logging.getLogger(__name__)
@@ -47,6 +49,9 @@ def _register_error_handlers(bot: Bot) -> None:
 def create_bot() -> Bot:
     """Собрать бота: правила, мидлвари, обработчики ошибок."""
     settings = get_settings()
+    # Контент проверяем сразу: битый data/content.json должен всплыть при
+    # старте, а не в первом же обработчике
+    get_content()
 
     bot = Bot(token=settings.vk_token)
 
@@ -55,6 +60,8 @@ def create_bot() -> Bot:
     bot.labeler.message_view.replace_mention = True
 
     bot.labeler.load(greeting_labeler)
+    # Меню — до AI-лейблера: сначала кнопки и команды, потом текстовый фоллбэк
+    bot.labeler.load(menu_labeler)
     bot.labeler.load(chat_labeler)
     bot.labeler.message_view.register_middleware(MessageLogMiddleware)
 
@@ -69,12 +76,17 @@ def create_bot() -> Bot:
 def main() -> int:
     try:
         settings = get_settings()
+        get_content()
     except ConfigError as exc:
         print(f"Ошибка конфигурации: {exc}", file=sys.stderr)
+        return 1
+    except ContentError as exc:
+        print(f"Ошибка контента: {exc}", file=sys.stderr)
         return 1
 
     setup_logging(settings.log_level)
     logger.info("Запуск бота (модель AI: %s)", settings.ai_model)
+    logger.info("Контент загружен: услуг — %s", content_services_count())
 
     bot = create_bot()
     bot.run()  # LongPoll, блокирующий вызов
