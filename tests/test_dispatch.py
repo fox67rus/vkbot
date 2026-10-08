@@ -81,3 +81,46 @@ def test_exactly_one_handler_matches_per_event(built_bot) -> None:
     ]
     for message in cases:
         assert len(matching_handlers(built_bot, message)) <= 1
+
+
+# ------------------------------------------------------------ меню и команды
+
+
+def test_menu_button_routes_to_menu_handler(built_bot) -> None:
+    """Нажатие кнопки уходит в меню, а не в AI."""
+    message = make_message(text="Услуги", payload={"cmd": "services"}, **PRIVATE)
+
+    assert matching_handlers(built_bot, message) == ["on_services_button"]
+
+
+def test_service_button_routes_to_service_handler(built_bot) -> None:
+    message = make_message(
+        text="Разработка сайта",
+        payload={"cmd": "service", "id": "web"},
+        **PRIVATE,
+    )
+
+    assert matching_handlers(built_bot, message) == ["on_service_button"]
+
+
+def test_alias_command_routes_to_menu_not_ai(built_bot) -> None:
+    """Свободный текст — AI, команда меню — меню."""
+    message = make_message(text="  ЦЕНЫ ", **PRIVATE)
+
+    assert matching_handlers(built_bot, message) == ["on_alias_command"]
+
+
+def test_mentioned_chat_command_routes_to_menu(built_bot) -> None:
+    message = make_message(text="[club100|Бот] менеджер", **CHAT)
+
+    assert matching_handlers(built_bot, message) == ["on_chat_alias_command"]
+
+
+def test_exactly_one_handler_matches_for_menu_events(built_bot) -> None:
+    cases = [
+        make_message(text="Услуги", payload={"cmd": "services"}, **PRIVATE),
+        make_message(text="цены", **PRIVATE),
+        make_message(text="[club100|Бот] услуги", **CHAT),
+    ]
+    for message in cases:
+        assert len(matching_handlers(built_bot, message)) == 1

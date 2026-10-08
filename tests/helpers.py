@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import socket
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
@@ -55,6 +56,7 @@ def make_message(
     from_id: int = 1,
     group_id: int = 100,
     action: dict | None = None,
+    payload: dict | str | None = None,
     replace_mention: bool = True,
 ):
     """Синтетическое сообщение в том виде, в каком его создаёт vkbottle."""
@@ -71,6 +73,11 @@ def make_message(
     }
     if action is not None:
         message["action"] = action
+    if payload is not None:
+        # В API payload приходит строкой JSON
+        message["payload"] = (
+            payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
+        )
 
     event = {
         "type": "message_new",

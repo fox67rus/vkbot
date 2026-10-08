@@ -55,16 +55,29 @@ def restore_labelers():
     В проде бот собирается один раз, а в тестах это ломало бы порядок
     файлов — поэтому возвращаем исходные view после каждого теста.
     """
-    from handlers import chat_labeler, greeting_labeler
+    from handlers import chat_labeler, greeting_labeler, menu_labeler
 
     saved = [
         (labeler, labeler.message_view, labeler.raw_event_view)
-        for labeler in (greeting_labeler, chat_labeler)
+        for labeler in (greeting_labeler, menu_labeler, chat_labeler)
     ]
     yield
     for labeler, message_view, raw_event_view in saved:
         labeler.message_view = message_view
         labeler.raw_event_view = raw_event_view
+
+
+@pytest.fixture(autouse=True)
+def clean_menu_state():
+    """Контент и память меню не должны течь между тестами."""
+    from content import reset_content
+    from handlers.menu import reset_welcomed
+
+    reset_content()
+    reset_welcomed()
+    yield
+    reset_content()
+    reset_welcomed()
 
 
 @pytest.fixture
